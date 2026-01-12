@@ -14,6 +14,9 @@
 | ambari8 | 172.16.200.8 | DataNode, NodeManager, Metrics Monitor |
 | ambari5 | 172.16.200.5 | DataNode, NodeManager, Metrics Monitor |
 | ambari3 | 172.16.200.3 | DataNode, NodeManager, ZooKeeper Client, varios clientes |
+| VM Redis | 172.16.200.23 | Servidor Redis ejecutándose en una VM sobre el PC físico que aloja ambari3 (servicio auxiliar externo al clúster Hadoop). |
+| VM HA Debian | 172.30.101.216 | Debian con Home Assistant sobre Docker en el PC físico que aloja ambari5, para automatización doméstica y contenedores adicionales. |
+​
 
 
 ## Relaciones entre nodos (visión lógica)
