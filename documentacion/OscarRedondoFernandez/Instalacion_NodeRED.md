@@ -9,15 +9,15 @@
 
 ## 📑 Tabla de Contenidos
 - [1. Introducción](#1-introducción)
-- [2. Problema de Compatibilidad: glibc 217](#2-problema-de-compatibilidad-glibc-217)
-- [3. Instalación Manual de Nodejs 16](#3-instalación-manual-de-nodejs-16)
-  - [31 Proceso de Instalación](#31-proceso-de-instalación)
+- [2. Problema de Compatibilidad: glibc-217](#2-problema-de-compatibilidad-glibc-217)
+- [3. Instalación Manual de Nodejs-16](#3-instalación-manual-de-nodejs-16)
+  - [3.1 Proceso de Instalación](#31-proceso-de-instalación)
 - [4. Configuración de npm](#4-configuración-de-npm)
 - [5. Instalación de Node-RED](#5-instalación-de-node-red)
-  - [51 Nodos y Módulos Adicionales](#51-nodos-y-módulos-adicionales)
+  - [5.1 Nodos y Módulos Adicionales](#51-nodos-y-módulos-adicionales)
 - [6. Validación con Kafka](#6-validación-con-kafka)
-  - [61 Conversión Buffer → Texto](#61-conversión-buffer--texto)
-  - [62 Envío Manual de Datos](#62-envío-manual-de-datos)
+  - [6.1 Conversión Buffer → Texto](#61-conversión-buffer--texto)
+  - [6.2 Envío Manual de Datos](#62-envío-manual-de-datos)
 - [7. APIs REST y Dashboard](#7-apis-rest-y-dashboard)
 - [8. Servicio Systemd](#8-servicio-systemd)
 
@@ -32,6 +32,11 @@ CentOS 7 requiere versiones antiguas de Node.js debido a la dependencia con **gl
 ## 2. Problema de Compatibilidad: glibc 2.17
 Las versiones modernas de Node.js requieren glibc ≥ 2.28, lo que genera errores como:
 
+glibc >= 2.28 required
+libstdc++.so.6(GLIBCXX_3.4.21) required
+libm.so.6(GLIBC_2.27) required
+
+Código
 
 ---
 
@@ -40,7 +45,6 @@ Node.js **16** es la última versión compatible con glibc 2.17.
 
 ### 3.1 Proceso de Instalación
 
-```bash
 # Acceso al directorio y descarga
 cd /opt
 sudo curl -O https://nodejs.org/dist/latest-v16.x/node-v16.20.2-linux-x64.tar.xz
@@ -52,7 +56,6 @@ sudo mv node-v16.20.2-linux-x64 node16
 # Configuración del PATH en ~/.bashrc
 echo 'export PATH=/opt/node16/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
-
 4. Configuración de npm
 Para evitar errores EACCES al instalar paquetes globales:
 
@@ -74,7 +77,6 @@ node-red-dashboard
 
 6. Validación con Kafka
 6.1 Conversión Buffer → Texto
-javascript
 if (msg.payload && msg.payload.value) {
     msg.payload = msg.payload.value.toString();
     return msg;
