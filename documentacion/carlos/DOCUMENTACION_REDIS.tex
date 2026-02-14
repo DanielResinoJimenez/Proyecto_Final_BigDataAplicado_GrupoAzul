@@ -1,0 +1,193 @@
+```latex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\geometry{a4paper, margin=2.5cm}
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Guía Paso a Paso: Configuración y Uso Básico de Redis para Almacenamiento de Datos de Sensores}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+Esta guía documenta el proceso completo para configurar, autenticar, verificar y gestionar datos en Redis, enfocándose en un escenario típico de almacenamiento de lecturas de sensores. Incluye solo los pasos esenciales y decisiones relevantes.
+
+\section*{1. Conexión y Autenticación}
+
+Redis está configurado con una contraseña (directiva \texttt{requirepass} en \texttt{redis.conf}). Para interactuar con él, debes autenticarte.
+
+\subsection*{Opción recomendada (segura y simple):}
+\begin{lstlisting}[language=bash]
+redis-cli
+127.0.0.1:6379> AUTH tu_contraseña
+OK
+\end{lstlisting}
+
+\subsection*{Alternativa para comandos individuales (con advertencia de seguridad):}
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" PING
+\end{lstlisting}
+\textbf{Advertencia:} Usar \texttt{-a} expone la contraseña en el historial del shell. Solo para entornos de desarrollo.
+
+\subsection*{Forma más segura para scripts:}
+\begin{lstlisting}[language=bash]
+export REDISCLI_AUTH="tu_contraseña"
+redis-cli PING
+\end{lstlisting}
+
+\section*{2. Verificar Contenido Actual de la Base de Datos}
+
+\subsection*{Listar todas las claves existentes:}
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" KEYS "*"
+\end{lstlisting}
+Esto muestra todos los nombres de claves (ej. \texttt{sensor\_id\_1}, \texttt{sensor\_id\_2}, ...). \\
+\textbf{Advertencia:} No usar en producción con millones de claves; bloquea Redis temporalmente.
+
+\subsection*{Ver el valor de una clave específica (tipo string):}
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" GET sensor_id_19
+# Ejemplo de salida: "Exito_Total"
+\end{lstlisting}
+
+\subsection*{Ver el tipo de una clave:}
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" TYPE sensor_id_19
+# Salida esperada: string
+\end{lstlisting}
+
+\section*{3. Listar Todo el Contenido (Claves + Valores)}
+
+Si todas tus claves son strings (como en el caso de sensores), usa este script en Bash:
+
+\begin{lstlisting}[language=bash]
+#!/bin/bash
+PASSWORD="tu_contraseña"
+
+for key in $(redis-cli -a "$PASSWORD" KEYS "*"); do
+  value=$(redis-cli -a "$PASSWORD" GET "$key")
+  echo "$key = $value"
+done
+\end{lstlisting}
+
+Guarda como \texttt{list\_redis.sh}, hazlo ejecutable (\texttt{chmod +x list\_redis.sh}) y ejecuta.
+
+\section*{4. Configuración de Persistencia y Manejo de Errores}
+
+\subsection*{Desactivar bloqueo por errores de guardado en disco}
+Por defecto, Redis detiene las escrituras si falla la persistencia (\texttt{BGSAVE}). Para evitar esto (útil en desarrollo):
+
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" CONFIG SET stop-writes-on-bgsave-error no
+\end{lstlisting}
+
+\textbf{Cuándo usarlo:} Entornos de desarrollo, caché no crítico, o cuando tienes respaldo externo. \\
+\textbf{No usar en producción} si los datos son críticos y dependes de la persistencia de Redis.
+
+\subsection*{Verificar configuración actual:}
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" CONFIG GET stop-writes-on-bgsave-error
+\end{lstlisting}
+
+\section*{5. Gestión de Memoria (Evitar Pérdida de Datos)}
+
+Redis puede eliminar claves automáticamente si se alcanza el límite de memoria.
+
+\subsection*{Verificar límite de memoria y política de evicción:}
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" INFO memory | grep maxmemory
+redis-cli -a "tu_contraseña" CONFIG GET maxmemory-policy
+\end{lstlisting}
+
+\subsection*{Recomendación para datos de sensores:}
+\begin{itemize}[left=0pt]
+    \item Si los datos deben conservarse, asegúrate de que \texttt{maxmemory} sea suficiente.
+    \item Usa la política \texttt{noeviction} para evitar eliminación automática (pero monitorea el uso de RAM):
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+redis-cli -a "tu_contraseña" CONFIG SET maxmemory-policy noeviction
+\end{lstlisting}
+
+\section*{6. Diagnóstico de Datos Faltantes}
+
+Si esperas datos que no aparecen en Redis:
+
+\begin{enumerate}[left=0pt]
+    \item \textbf{Verifica que la aplicación envía los comandos correctamente} (logs del cliente).
+    \item \textbf{Revisa los logs del servidor Redis:}
+    \begin{lstlisting}[language=bash]
+sudo tail -f /var/log/redis/redis-server.log
+    \end{lstlisting}
+    \item \textbf{Confirma que no se está superando \texttt{maxmemory}} (paso 5).
+    \item \textbf{Asegúrate de que la persistencia no está causando confusión} (los datos están en memoria aunque no se hayan guardado en disco aún).
+\end{enumerate}
+
+\textbf{Importante:} Redis \textbf{no almacena ni registra} intentos fallidos de escritura (ej. por autenticación incorrecta). Solo guarda lo que se escribe exitosamente.
+
+\section*{Resumen de Comandos Útiles}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Acción} & \textbf{Comando} \\
+\midrule
+Autenticar & \texttt{AUTH tu\_contraseña} \\
+Listar claves & \texttt{KEYS "*"} \\
+Obtener valor & \texttt{GET nombre\_clave} \\
+Ver tipo & \texttt{TYPE nombre\_clave} \\
+Desactivar bloqueo por error de disco & \texttt{CONFIG SET stop-writes-on-bgsave-error no} \\
+Ver uso de memoria & \texttt{INFO memory} \\
+Cambiar política de evicción & \texttt{CONFIG SET maxmemory-policy noeviction} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
+```

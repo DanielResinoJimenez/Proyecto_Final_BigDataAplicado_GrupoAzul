@@ -1,0 +1,199 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Guía Completa: Configuración de PostgreSQL y Spark en Zeppelin}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Objetivo}
+Configurar PostgreSQL para permitir conexiones desde Spark (vía Zeppelin), importar una base de datos y leer datos correctamente.
+
+\section*{1. Configuración de PostgreSQL}
+
+\subsection*{1.1. Editar pg\_hba.conf}
+Permitir conexiones desde la IP de la VM y localhost usando autenticación por contraseña.
+
+\begin{lstlisting}[language=bash]
+sudo vi /var/lib/pgsql/data/pg_hba.conf
+\end{lstlisting}
+
+Añadir las siguientes líneas:
+\begin{lstlisting}
+# Conexión desde la IP de la VM
+host    migasfree       ambari_user     192.168.1.103/32        md5
+
+# Conexión desde localhost
+host    migasfree       ambari_user     127.0.0.1/32            md5
+
+# Conexión local (socket Unix)
+local   migasfree       ambari_user                                 md5
+\end{lstlisting}
+
+\subsection*{1.2. Editar postgresql.conf}
+Permitir conexiones desde cualquier dirección.
+
+\begin{lstlisting}[language=bash]
+sudo vi /var/lib/pgsql/data/postgresql.conf
+\end{lstlisting}
+
+Asegurarse de que contenga:
+\begin{lstlisting}
+listen_addresses = '*'
+port = 5432
+\end{lstlisting}
+
+\subsection*{1.3. Reiniciar PostgreSQL}
+\begin{lstlisting}[language=bash]
+sudo systemctl restart postgresql
+\end{lstlisting}
+
+\section*{2. Creación de usuario y base de datos}
+
+\subsection*{2.1. Acceder a psql como superusuario}
+\begin{lstlisting}[language=bash]
+sudo -u postgres psql
+\end{lstlisting}
+
+\subsection*{2.2. Crear usuario y base de datos}
+Dentro de \texttt{psql}:
+\begin{lstlisting}[language=sql]
+-- Crear usuario
+CREATE USER ambari_user WITH PASSWORD 'password';
+
+-- Crear base de datos
+CREATE DATABASE migasfree;
+
+-- Asignar propietario
+ALTER DATABASE migasfree OWNER TO ambari_user;
+
+-- Otorgar permisos
+GRANT ALL PRIVILEGES ON DATABASE migasfree TO ambari_user;
+\end{lstlisting}
+
+\section*{3. Importación de la base de datos}
+
+\subsection*{3.1. Importar archivo SQL}
+\begin{lstlisting}[language=bash]
+psql -U ambari_user -d migasfree -f /ruta/al/archivo/migasfree.sql
+\end{lstlisting}
+
+\subsection*{3.2. Verificar importación}
+Conectarse a la base de datos:
+\begin{lstlisting}[language=bash]
+psql -U ambari_user -d migasfree
+\end{lstlisting}
+
+Dentro de \texttt{psql}:
+\begin{lstlisting}[language=sql]
+-- Listar tablas
+\dt
+
+-- Verificar contenido de server_computer
+SELECT COUNT(*) FROM server_computer;
+SELECT * FROM server_computer LIMIT 5;
+\end{lstlisting}
+
+\section*{4. Configuración en Zeppelin}
+
+\subsection*{4.1. Cargar el driver de PostgreSQL}
+En el intérprete de Spark de Zeppelin:
+\begin{itemize}
+    \item Ir a Interpreter $\rightarrow$ spark $\rightarrow$ Edit
+    \item En Dependencies, añadir: \texttt{/usr/lib/zeppelin/lib/postgresql-42.3.9.jar}
+    \item Eliminar cualquier configuración de JAR en el código Scala
+\end{itemize}
+
+\subsection*{4.2. Código Scala en Zeppelin}
+\begin{lstlisting}[language=scala]
+%spark
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
+val spark = SparkSession.builder()
+  .appName("PostgreSQL to Parquet")
+  .config("spark.driver.memory", "512m")
+  .config("spark.executor.memory", "256m")
+  .config("spark.executor.instances", "1")
+  .config("spark.executor.cores", "1")
+  .getOrCreate()
+
+val jdbcUrl = "jdbc:postgresql://ambari1:5432/migasfree"
+val connectionProperties = new java.util.Properties()
+connectionProperties.put("driver", "org.postgresql.Driver")
+connectionProperties.put("user", "ambari_user")
+connectionProperties.put("password", "password")
+
+val df = spark.read
+  .jdbc(jdbcUrl, "server_computer", connectionProperties)
+
+df.show(20)
+println(s"Total registros: ${df.count()}")
+
+// Guardar en HDFS (asegurarse de tener permisos en /user/admin)
+df.write.mode("overwrite").parquet("hdfs:///user/admin/datos/v4/data.parquet")
+
+spark.stop()
+\end{lstlisting}
+
+\section*{5. Solución de permisos en HDFS}
+
+\subsection*{5.1. Crear directorio en HDFS}
+\begin{lstlisting}[language=bash]
+sudo -u hdfs hdfs dfs -mkdir -p /user/admin
+sudo -u hdfs hdfs dfs -chown admin:admin /user/admin
+\end{lstlisting}
+
+\subsection*{5.2. Alternativa: usar /tmp}
+Cambiar la ruta de destino en el código Scala a:
+\begin{lstlisting}[language=scala]
+"hdfs:///tmp/data.parquet"
+\end{lstlisting}
+
+Y asegurar permisos:
+\begin{lstlisting}[language=bash]
+sudo -u hdfs hdfs dfs -chmod 1777 /tmp
+\end{lstlisting}
+
+\section*{Notas finales}
+\begin{itemize}
+    \item Asegúrese de que el nombre del usuario en PostgreSQL coincida exactamente con el usado en la configuración (\texttt{ambari\_user}, no \texttt{ambari-user}).
+    \item Si trabaja en una VM con recursos limitados, use \texttt{local[*]} como master en lugar de YARN.
+    \item Siempre verifique los logs de Zeppelin y YARN ante fallos persistentes.
+\end{itemize}
+
+\end{document}
