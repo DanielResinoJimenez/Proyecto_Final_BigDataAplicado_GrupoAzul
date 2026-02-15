@@ -1,14 +1,6 @@
 
 
-***
-
-```markdown
-# Configuración de JMX Exporter
-## Exposición de Métricas Kafka para Monitorización
-
-## Resumen Ejecutivo
-
-Este documento detalla la configuración del JMX Prometheus Exporter en el broker Kafka ubicado en `nodo1`, permitiendo la exposición de métricas operativas en formato Prometheus para su posterior consumo por sistemas de monitorización externos.
+# Este documento detalla la configuración del JMX Prometheus Exporter en el broker Kafka ubicado en `nodo1`, permitiendo la exposición de métricas operativas en formato Prometheus para su posterior consumo por sistemas de monitorización externos.
 
 ### Especificaciones Técnicas
 
@@ -54,17 +46,6 @@ Para garantizar la observabilidad del sistema, se implementa JMX Exporter que:
 - Las expone vía HTTP en el puerto 7071
 - Permite monitorización sin impacto en el rendimiento
 
-### Alcance de este Documento
-
-Este documento cubre **únicamente** la configuración realizada en `nodo1`:
-
-- ✅ Descarga e instalación del JMX Exporter
-- ✅ Configuración del archivo YAML de reglas
-- ✅ Modificación del script de inicio de Kafka
-- ✅ Configuración del firewall
-- ✅ Verificación local de métricas
-
-**Fuera de alcance:** Configuración de Prometheus, Grafana o sistemas de monitorización externos.
 
 ### Infraestructura
 
@@ -150,8 +131,6 @@ ls -lh jmx_prometheus_javaagent-0.20.0.jar
 -rw-rw-r-- 1 hadoop hadoop 564K ago 12 2023 jmx_prometheus_javaagent-0.20.0.jar
 ```
 
-![Descarga del archivo JAR desde ambari11](jvm3.jpg)
-
 #### Paso 2: Transferencia a nodo1
 
 ```bash
@@ -163,7 +142,6 @@ scp hadoop@172.16.200.11:/tmp/jmx_prometheus_javaagent-0.20.0.jar /tmp/
 
 # Cambiar a usuario root
 su -
-# Introducir password de root
 
 # Mover archivo a ubicacion definitiva
 mv /tmp/jmx_prometheus_javaagent-0.20.0.jar /opt/
@@ -176,8 +154,6 @@ chown root:root /opt/jmx_prometheus_javaagent-0.20.0.jar
 ls -lh /opt/jmx_prometheus_javaagent-0.20.0.jar
 file /opt/jmx_prometheus_javaagent-0.20.0.jar
 ```
-
-![Transferencia y configuración de permisos en nodo1](jvm1.jpg)
 
 **Verificación exitosa:**
 ```
@@ -244,8 +220,6 @@ EOF
 cat /opt/kafka-jmx-config.yml
 ```
 
-![Contenido del archivo kafka-jmx-config.yml](jvm4.jpg)
-
 #### Explicación de las Reglas
 
 | Parámetro | Descripción |
@@ -278,8 +252,6 @@ fi
 export KAFKA_JMX_OPTS
 ```
 
-![Modificación del script kafka-server-start.sh](jvm2.jpg)
-
 #### Explicación de los Parámetros JMX
 
 | Parámetro | Descripción |
@@ -291,7 +263,7 @@ export KAFKA_JMX_OPTS
 | `-Dcom.sun.management.jmxremote.port=9999` | Puerto para conexiones JMX nativas |
 | `-Djava.rmi.server.hostname=172.16.200.28` | IP del servidor para conexiones RMI |
 
-> **⚠️ Nota de Seguridad:**  
+> ** Nota de Seguridad:**  
 > En entornos de producción, se recomienda activar autenticación JMX y SSL. Para este proyecto educativo se desactivan para simplificar la configuración.
 
 ---
@@ -353,7 +325,7 @@ firewall-cmd --list-ports
 9092/tcp 7071/tcp
 ```
 
-> **🔥 CRÍTICO:**  
+> ** CRÍTICO:**  
 > **Sin este paso, la monitorización externa fallará.** Prometheus mostrará el error: `"connect: no route to host"`. Este es el problema más común al configurar JMX Exporter.
 
 #### Verificación de Reglas de Firewall
@@ -481,23 +453,6 @@ Si estas pruebas funcionan, el endpoint está correctamente configurado y accesi
 | `kafka_server_replicamanager_underreplicatedpartitions` | Particiones sin replicación completa (debe ser 0) |
 | `kafka_server_kafkaserver_brokerstate` | Estado del broker (3 = Running) |
 
-#### Métricas de Red
-
-| Métrica | Descripción |
-|---------|-------------|
-| `kafka_network_requestmetrics_totaltimems` | Tiempo total de procesamiento de requests |
-| `kafka_network_requestmetrics_requestqueuetimems` | Tiempo en cola de peticiones |
-| `kafka_network_processor_idlepercent` | Porcentaje de tiempo inactivo de procesadores |
-
-#### Métricas de Topics
-
-| Métrica | Descripción |
-|---------|-------------|
-| `kafka_log_logsize` | Tamaño del log en bytes por topic/partition |
-| `kafka_log_logsegments` | Número de segmentos activos |
-| `kafka_log_logendoffset` | Offset del último mensaje |
-| `kafka_log_logstartoffset` | Offset del primer mensaje disponible |
-
 ---
 
 ### Troubleshooting
@@ -549,7 +504,6 @@ firewall-cmd --list-ports
 
 # 2. Verificar que el puerto escucha en todas las interfaces
 netstat -tulpn | grep 7071
-# Debe mostrar ::: o 0.0.0.0, NO 127.0.0.1
 
 # 3. Probar localmente primero
 curl http://localhost:7071/metrics
@@ -564,36 +518,6 @@ iptables -L -n | grep 7071
 firewall-cmd --permanent --add-port=7071/tcp
 firewall-cmd --reload
 firewall-cmd --list-ports
-```
-
----
-
-#### Problema: Pocas métricas o métricas incompletas
-
-**Diagnóstico:**
-```bash
-# Contar metricas
-curl -s http://localhost:7071/metrics | grep "^kafka_" | wc -l
-
-# Ver metricas disponibles
-curl -s http://localhost:7071/metrics | grep "^kafka_" | head -20
-```
-
-**Causas:**
-- Kafka recién iniciado (algunas métricas aparecen tras actividad)
-- Topic sin mensajes (métricas de log vacías)
-- Errores en patrones del archivo YAML
-
-**Solución:**
-```bash
-# Generar actividad en Kafka
-echo "test" | /opt/kafka-2.8.1/bin/kafka-console-producer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic acceso-centros-nfc
-
-# Esperar y verificar de nuevo
-sleep 5
-curl -s http://localhost:7071/metrics | grep "messagesinpersec"
 ```
 
 ---
@@ -657,9 +581,8 @@ echo "======================================================"
 
 ### Endpoint de Métricas
 
-Los sistemas de monitorización externos deben configurarse para acceder a:
+** Endpoint Configurado:**
 
-**✅ Endpoint Configurado:**
 ```
 URL: http://172.16.200.28:7071/metrics
 Formato: Prometheus text format
@@ -689,65 +612,6 @@ scrape_configs:
 
 ---
 
-### Métricas Críticas a Monitorizar
-
-| Métrica | Umbral de Alerta |
-|---------|------------------|
-| `kafka_server_replicamanager_underreplicatedpartitions` | > 0 (crítico) |
-| `kafka_controller_kafkacontroller_offlinepartitionscount` | > 0 (crítico) |
-| `kafka_network_requestmetrics_totaltimems` | > 1000ms (warning) |
-| `kafka_log_logsize` | Según capacidad de disco |
-
----
-
-## Conclusiones
-
-### Resumen de la Configuración
-
-Se ha configurado exitosamente el JMX Prometheus Exporter en el broker Kafka de `nodo1`, permitiendo:
-
-- ✅ Exposición de métricas JMX en formato Prometheus
-- ✅ Acceso HTTP en puerto 7071
-- ✅ Más de 50 métricas operativas disponibles
-- ✅ Acceso externo habilitado mediante firewall
-- ✅ Sistema listo para integración con Prometheus/Grafana
-
----
-
-### Archivos Modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `/opt/jmx_prometheus_javaagent-0.20.0.jar` | Instalado (nuevo archivo) |
-| `/opt/kafka-jmx-config.yml` | Creado (nuevo archivo) |
-| `/opt/kafka-2.8.1/bin/kafka-server-start.sh` | Modificado (añadido KAFKA_JMX_OPTS) |
-| Firewall (firewalld) | Puerto 7071/tcp añadido |
-
----
-
-### Estado Final
-
-**✅ Sistema Operativo:**
-- Kafka corriendo con JMX Exporter activo
-- Puerto 7071 escuchando en todas las interfaces
-- Firewall configurado correctamente
-- Endpoint accesible desde red interna
-- Listo para consumo por sistemas de monitorización
-
----
-
-### Próximos Pasos (Responsabilidad Externa)
-
-La configuración en `nodo1` está completa. Los siguientes pasos corresponden al equipo de monitorización:
-
-1. Configurar Prometheus para hacer scraping del endpoint
-2. Configurar Grafana con data source de Prometheus
-3. Importar dashboards de Kafka
-4. Configurar alertas según umbrales definidos
-5. Documentar su parte de la implementación
-
----
-
 ## Referencias
 
 - [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
@@ -758,104 +622,4 @@ La configuración en `nodo1` está completa. Los siguientes pasos corresponden a
 
 ---
 
-## Apéndices
-
-### Apéndice A: Contenido Completo de kafka-jmx-config.yml
-
-```yaml
-lowercaseOutputName: true
-lowercaseOutputLabelNames: true
-rules:
-  # Reglas para metricas de Kafka Broker
-  - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), topic=(.+), partition=(.*)><>Value
-    name: kafka_server_$1_$2
-    type: GAUGE
-    labels:
-      clientId: "$3"
-      topic: "$4"
-      partition: "$5"
-  
-  - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), brokerHost=(.+), brokerPort=(.+)><>Value
-    name: kafka_server_$1_$2
-    type: GAUGE
-    labels:
-      clientId: "$3"
-      broker: "$4:$5"
-  
-  - pattern: kafka.server<type=(.+), name=(.+)><>Value
-    name: kafka_server_$1_$2
-    type: GAUGE
-  
-  # Metricas de red
-  - pattern: kafka.network<type=(.+), name=(.+), request=(.+)><>Value
-    name: kafka_network_$1_$2
-    type: GAUGE
-    labels:
-      request: "$3"
-  
-  # Metricas de log
-  - pattern: kafka.log<type=(.+), name=(.+), topic=(.+), partition=(.+)><>Value
-    name: kafka_log_$1_$2
-    type: GAUGE
-    labels:
-      topic: "$3"
-      partition: "$4"
-  
-  # Metricas de controller
-  - pattern: kafka.controller<type=(.+), name=(.+)><>Value
-    name: kafka_controller_$1_$2
-    type: GAUGE
-```
-
----
-
-### Apéndice B: Comandos de Mantenimiento
-
-#### Backup de Configuración
-
-```bash
-# Crear directorio de backups
-mkdir -p /opt/backups
-
-# Backup con fecha
-DATE=$(date +%Y%m%d_%H%M%S)
-cp /opt/kafka-jmx-config.yml /opt/backups/kafka-jmx-config.yml.$DATE
-cp /opt/kafka-2.8.1/bin/kafka-server-start.sh /opt/backups/kafka-server-start.sh.$DATE
-```
-
-#### Verificación Rápida
-
-```bash
-# Test rapido del endpoint
-curl http://localhost:7071/metrics | head -10
-
-# Contar metricas
-curl -s http://localhost:7071/metrics | grep -c "^kafka_"
-
-# Ver metricas de topic especifico
-curl -s http://localhost:7071/metrics | grep "acceso-centros-nfc"
-```
-
-#### Reinicio Seguro de Kafka
-
-```bash
-# Detener Kafka
-/opt/kafka-2.8.1/bin/kafka-server-stop.sh
-sleep 10
-
-# Verificar que se detuvo
-ps aux | grep kafka
-
-# Iniciar Kafka
-/opt/kafka-2.8.1/bin/kafka-server-start.sh -daemon \
-  /opt/kafka-2.8.1/config/server.properties
-
-# Esperar arranque
-sleep 15
-
-# Verificar JMX
-curl http://localhost:7071/metrics | head -5
-```
-
----
 
