@@ -1,9 +1,3 @@
-Aquí tienes el archivo **completamente corregido** con el formato Markdown estándar que utiliza GitHub y la mayoría de editores. He eliminado las URLs anidadas dentro de corchetes en los bloques de código y he limpiado la sintaxis para que los bloques de código, tablas y diagramas se rendericen perfectamente.
-
-Copia y pega el siguiente bloque:
-
----
-
 # Configuración de JMX Exporter
 
 ## Exposición de Métricas Kafka para Monitorización
