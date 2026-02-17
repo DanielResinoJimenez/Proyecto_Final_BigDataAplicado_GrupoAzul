@@ -1,5 +1,3 @@
-Aquí está tu documentación actualizada con la explicación del dashboard y la imagen:
-
 ```markdown
 # Documentación: Apache Superset con PostgreSQL
 
