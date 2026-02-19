@@ -1,0 +1,246 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black}
+}
+
+\title{Documentación: Monitoreo de Redis con Prometheus y Grafana en CentOS 7}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+Este documento describe paso a paso cómo configurar un sistema de monitoreo para Redis usando Prometheus, \texttt{redis\_exporter} y Grafana en un entorno con máquinas virtuales CentOS 7.
+
+\section*{Arquitectura del entorno}
+\begin{itemize}
+    \item Máquina 1 (\texttt{nodo1}) — IP: \texttt{172.16.200.63} → Servicios: Prometheus, Grafana
+    \item Máquina 2 — IP: \texttt{172.16.200.23} → Servicio: Redis
+\end{itemize}
+Ambas máquinas deben tener conectividad de red entre sí.
+
+\section*{Paso 1: Instalar y configurar Prometheus en nodo1 (172.16.200.63)}
+
+Crear usuario y directorios:
+\begin{lstlisting}[language=bash]
+sudo useradd --no-create-home --shell /bin/false prometheus
+sudo mkdir /etc/prometheus
+sudo mkdir /var/lib/prometheus
+sudo chown prometheus:prometheus /etc/prometheus
+sudo chown prometheus:prometheus /var/lib/prometheus
+\end{lstlisting}
+
+Descargar e instalar Prometheus:
+\begin{lstlisting}[language=bash]
+cd /tmp
+LATEST_VERSION=$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
+wget https://github.com/prometheus/prometheus/releases/download/$LATEST_VERSION/prometheus-$LATEST_VERSION.linux-amd64.tar.gz
+tar xvf prometheus-$LATEST_VERSION.linux-amd64.tar.gz
+cd prometheus-$LATEST_VERSION.linux-amd64
+sudo cp prometheus /usr/local/bin/
+sudo cp promtool /usr/local/bin/
+sudo chown prometheus:prometheus /usr/local/bin/prometheus
+sudo chown prometheus:prometheus /usr/local/bin/promtool
+sudo cp -r consoles/ console_libraries/ /etc/prometheus/
+sudo chown -R prometheus:prometheus /etc/prometheus/consoles
+sudo chown -R prometheus:prometheus /etc/prometheus/console_libraries
+\end{lstlisting}
+
+Configurar archivo de Prometheus:
+\begin{lstlisting}[language=yaml]
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['172.16.200.23:9121']
+\end{lstlisting}
+
+Crear servicio systemd:
+\begin{lstlisting}[language=ini]
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+    --config.file /etc/prometheus/prometheus.yml \
+    --storage.tsdb.path /var/lib/prometheus/ \
+    --web.console.templates=/etc/prometheus/consoles \
+    --web.console.libraries=/etc/prometheus/console_libraries
+
+[Install]
+WantedBy=multi-user.target
+\end{lstlisting}
+
+Iniciar Prometheus:
+\begin{lstlisting}[language=bash]
+sudo systemctl daemon-reexec
+sudo systemctl enable prometheus
+sudo systemctl start prometheus
+\end{lstlisting}
+
+Verificar en: \texttt{http://172.16.200.63:9090}
+
+\section*{Paso 2: Instalar y configurar redis\_exporter en la máquina de Redis (172.16.200.23)}
+
+Verificar contraseña de Redis:
+\begin{lstlisting}[language=bash]
+grep "^requirepass" /etc/redis/redis.conf
+\end{lstlisting}
+(Anota la contraseña; ejemplo: \texttt{password})
+
+Descargar e instalar \texttt{redis\_exporter}:
+\begin{lstlisting}[language=bash]
+cd /tmp
+LATEST=$(curl -s https://api.github.com/repos/oliver006/redis_exporter/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
+wget https://github.com/oliver006/redis_exporter/releases/download/$LATEST/redis_exporter-$LATEST.linux-amd64.tar.gz
+tar xvf redis_exporter-$LATEST.linux-amd64.tar.gz
+sudo cp redis_exporter-$LATEST.linux-amd64/redis_exporter /usr/local/bin/
+sudo useradd --no-create-home --shell /bin/false redis_exporter 2>/dev/null || true
+sudo chown redis_exporter:redis_exporter /usr/local/bin/redis_exporter
+\end{lstlisting}
+
+Crear servicio systemd:
+\begin{lstlisting}[language=ini]
+[Unit]
+Description=Redis Exporter
+After=network.target
+
+[Service]
+User=redis_exporter
+Group=redis_exporter
+Type=simple
+ExecStart=/usr/local/bin/redis_exporter \
+    --redis.addr=localhost:6379 \
+    --redis.password=password \
+    --web.listen-address=:9121
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+\end{lstlisting}
+
+\textbf{Importante}: Reemplaza \texttt{password} con tu contraseña real.
+
+Iniciar el servicio:
+\begin{lstlisting}[language=bash]
+sudo systemctl daemon-reexec
+sudo systemctl enable redis_exporter
+sudo systemctl start redis_exporter
+\end{lstlisting}
+
+Verificar métricas:
+\begin{lstlisting}[language=bash]
+curl http://localhost:9121/metrics | grep redis_up
+\end{lstlisting}
+Debe mostrar: \texttt{redis\_up 1}
+
+\section*{Paso 3: Instalar y configurar Grafana en nodo1 (172.16.200.63)}
+
+Agregar repositorio e instalar:
+\begin{lstlisting}[language=bash]
+sudo tee /etc/yum.repos.d/grafana.repo <<EOF
+[grafana]
+name=grafana
+baseurl=https://packages.grafana.com/oss/rpm
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.grafana.com/gpg.key
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+EOF
+
+sudo yum install -y grafana
+\end{lstlisting}
+
+Iniciar Grafana:
+\begin{lstlisting}[language=bash]
+sudo systemctl daemon-reexec
+sudo systemctl enable grafana-server
+sudo systemctl start grafana-server
+\end{lstlisting}
+
+Acceder en: \texttt{http://172.16.200.63:3000} \\
+Usuario/contraseña por defecto: \texttt{admin} / \texttt{admin}
+
+\section*{Paso 4: Configurar datasource en Grafana}
+\begin{enumerate}
+    \item En Grafana, ir a \textbf{Configuration > Data Sources}
+    \item Hacer clic en \textbf{Add data source}
+    \item Seleccionar \textbf{Prometheus}
+    \item En \textbf{URL}, ingresar: \texttt{http://localhost:9090}
+    \item Hacer clic en \textbf{Save \& test}
+\end{enumerate}
+
+\section*{Paso 5: Importar dashboard de Redis}
+\begin{enumerate}
+    \item En Grafana, hacer clic en \textbf{+ > Import}
+    \item Ingresar el ID: \textbf{763}
+    \item Seleccionar el datasource \textbf{prometheus}
+    \item Hacer clic en \textbf{Import}
+\end{enumerate}
+
+\textbf{Nota}: Si el dashboard muestra "N/A", editar los paneles y asegurarse de que las consultas usen \texttt{\{job="redis"\}} en lugar de \texttt{\{job="redis\_exporter"\}}.
+
+\section*{Verificación final}
+\begin{itemize}
+    \item \textbf{Prometheus}: \texttt{http://172.16.200.63:9090/targets} → job \texttt{redis} debe estar \textbf{UP}
+    \item \textbf{Grafana}: Dashboard de Redis debe mostrar métricas reales:
+    \begin{itemize}
+        \item Uso de memoria
+        \item Clientes conectados
+        \item Comandos por segundo
+        \item Tiempo de actividad
+    \end{itemize}
+\end{itemize}
+
+\section*{Solución de problemas comunes}
+
+\textbf{Redis muestra "N/A" en Grafana}
+\begin{itemize}
+    \item Verificar que \texttt{redis\_exporter} tenga la contraseña correcta
+    \item Confirmar que en Prometheus las métricas tengan \texttt{job="redis"}
+    \item Editar las consultas del dashboard para usar \texttt{\{job="redis"\}}
+\end{itemize}
+
+\textbf{Target de Redis aparece como DOWN en Prometheus}
+\begin{itemize}
+    \item Verificar firewall en la máquina de Redis: \texttt{sudo firewall-cmd --permanent --add-port=9121/tcp}
+    \item Confirmar que \texttt{redis\_exporter} esté escuchando en todas las interfaces (\texttt{:9121}, no \texttt{127.0.0.1:9121})
+\end{itemize}
+
+\section*{Notas importantes}
+\begin{itemize}
+    \item Este documento se centra exclusivamente en el monitoreo de Redis
+    \item Todos los pasos asumen una instalación limpia de CentOS 7
+    \item Las contraseñas y direcciones IP deben ajustarse según el entorno real
+    \item El dashboard ID 763 es el estándar para Redis con Prometheus
+\end{itemize}
+
+\end{document}
