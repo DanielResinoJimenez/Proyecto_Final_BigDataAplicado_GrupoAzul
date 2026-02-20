@@ -1,0 +1,1060 @@
+\documentclass[11pt,a4paper]{article}
+
+% ============================================================
+% PAQUETES ESENCIALES
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue!60!black,
+    citecolor=blue!70!black,
+    pdftitle={Documentación Técnica Completa - Proyecto Big Data},
+    pdfauthor={Equipo Proyecto Big Data 2025-2026},
+    pdfsubject={Sistema de Control de Accesos NFC y Monitorización}
+}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+% ============================================================
+% COLORES PARA CÓDIGO
+% ============================================================
+\definecolor{codebg}{HTML}{F5F5F5}
+\definecolor{codeframe}{HTML}{CCCCCC}
+\definecolor{codecomment}{HTML}{6A9955}
+\definecolor{codestring}{HTML}{CE9178}
+\definecolor{codekeyword}{HTML}{569CD6}
+
+% ============================================================
+% ESTILOS DE CÓDIGO
+% ============================================================
+\lstdefinestyle{bash}{
+    language=bash,
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    breaklines=true,
+    showstringspaces=false,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    xleftmargin=1em,
+    framexleftmargin=0.5em,
+    numbers=left,
+    numberstyle=\tiny\color{codecomment},
+    tabsize=4
+}
+
+\lstdefinestyle{python}{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    breaklines=true,
+    showstringspaces=false,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    xleftmargin=1em,
+    framexleftmargin=0.5em,
+    numbers=left,
+    numberstyle=\tiny\color{codecomment},
+    tabsize=4
+}
+
+\lstdefinestyle{sql}{
+    language=SQL,
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    breaklines=true,
+    showstringspaces=false,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    xleftmargin=1em,
+    framexleftmargin=0.5em,
+    numbers=left,
+    numberstyle=\tiny\color{codecomment},
+    tabsize=4
+}
+
+\lstdefinestyle{yaml}{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    breaklines=true,
+    showstringspaces=false,
+    commentstyle=\color{codecomment}\itshape,
+    morecomment=[l]{\#},
+    xleftmargin=1em,
+    framexleftmargin=0.5em,
+    tabsize=2
+}
+
+\lstdefinestyle{json}{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    breaklines=true,
+    showstringspaces=false,
+    stringstyle=\color{codestring},
+    xleftmargin=1em,
+    framexleftmargin=0.5em,
+    tabsize=2
+}
+
+% ============================================================
+% CONFIGURACIÓN DE ENCABEZADOS Y PIES
+% ============================================================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Proyecto Big Data 2025-2026}
+\fancyhead[R]{\small Sistema de Control de Accesos NFC}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ============================================================
+% FORMATO DE TÍTULOS
+% ============================================================
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries}{\thesubsubsection.}{0.5em}{}
+
+% ============================================================
+% DOCUMENTO
+% ============================================================
+\begin{document}
+
+% ------------------------------------------------------------
+% PORTADA
+% ------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\Huge\bfseries Documentación Técnica Completa}\\[0.8cm]
+    {\LARGE Proyecto Big Data 2025-2026}\\[0.4cm]
+    {\Large Sistema de Control de Accesos NFC}\\[1cm]
+    {\Large Monitorización, Procesamiento Distribuido\\y Visualización de Datos}\\[3cm]
+
+    {\large\textbf{Equipo Azul}} \\[0.3cm]
+    {\large\textbf{Módulo:}} Big Data Aplicado\\[0.3cm]
+    {\large\textbf{Entorno:}} Cluster Ambari (CentOS 7)}\\[2cm]
+    
+    \vfill
+    {\large Febrero 2026}
+\end{titlepage}
+
+% ------------------------------------------------------------
+% ÍNDICE
+% ------------------------------------------------------------
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================
+% PARTE I - INFRAESTRUCTURA Y CONECTIVIDAD
+% ============================================================
+\part{Infraestructura y Conectividad del Cluster}
+\label{part:infraestructura}
+
+\section{Configuración de Conectividad en el Cluster Ambari}
+\label{sec:conectividad-cluster}
+
+\subsection{Introducción}
+
+Este documento describe el proceso completo para establecer conectividad entre todos los hosts que conforman un cluster de Apache Ambari. El objetivo es garantizar que todos los nodos puedan comunicarse entre sí sin problemas, prerequisito indispensable para la instalación y configuración de los servicios distribuidos.
+
+El cluster está compuesto por 9 hosts con direcciones IP en el rango \texttt{172.16.200.x}, cada uno con su propia identidad de red y nombre de host único.
+
+\subsection{Topología del Cluster}
+
+\begin{table}[h!]
+\centering
+\caption{Topología del cluster Ambari}
+\begin{tabular}{@{} l l l l @{}}
+\toprule
+\textbf{Máquina} & \textbf{IP}        & \textbf{Hostname} & \textbf{Dominio Completo}       \\ \midrule
+Host 1            & 172.16.200.10      & ambari10           & ambari10.localdomain            \\
+Host 2            & 172.16.200.11      & ambari11           & ambari11.localdomain            \\
+Host 3            & 172.16.200.12      & ambari12           & ambari12.localdomain            \\
+Host 4            & 172.16.200.13      & ambari13           & ambari13.localdomain            \\
+Host 5            & 172.16.200.15      & ambari15           & ambari15.localdomain            \\
+Host 6            & 172.16.200.8       & ambari8            & ambari8.localdomain             \\
+Host 7            & 172.16.200.9       & ambari9            & ambari9.localdomain             \\
+Host 8            & 172.16.200.5       & ambari5            & ambari5.localdomain             \\
+Host 9            & 172.16.200.3       & ambari3            & ambari3.localdomain             \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Configuración de Adaptadores de Red}
+
+Cada máquina física fue configurada con \textbf{dos adaptadores de red}:
+
+\begin{enumerate}
+    \item \textbf{Adaptador Puente (Bridge)}: Conecta el cluster de hosts entre sí en la red \texttt{172.16.200.x}.
+    \item \textbf{Adaptador NAT}: Proporciona acceso a internet y conectividad externa.
+\end{enumerate}
+
+Esta configuración dual permite que los nodos se comuniquen entre ellos manteniendo conexión con el exterior.
+
+\subsection{Configuración del Archivo /etc/hosts}
+
+El siguiente contenido se replicó de forma idéntica en las 9 máquinas:
+
+\begin{lstlisting}[style=bash, caption={Contenido de /etc/hosts}]
+172.16.200.11   ambari11  ambari11.localdomain
+172.16.200.10   ambari10  ambari10.localdomain
+172.16.200.8    ambari8   ambari8.localdomain
+172.16.200.5    ambari5   ambari5.localdomain
+172.16.200.12   ambari12  ambari12.localdomain
+172.16.200.13   ambari13  ambari13.localdomain
+172.16.200.15   ambari15  ambari15.localdomain
+172.16.200.9    ambari9   ambari9.localdomain
+172.16.200.3    ambari3   ambari3.localdomain
+\end{lstlisting}
+
+\section{Instalación de Node-RED en CentOS 7}
+\label{sec:node-red}
+
+\subsection{Introducción}
+
+En la máquina virtual \texttt{ambari9} (VM9) se realizó la instalación de Node.js, npm y Node-RED para habilitar un entorno de integración ligera y dashboards complementarios al ecosistema Big Data.
+
+\subsection{Problema Inicial: Incompatibilidad}
+
+CentOS 7 utiliza \texttt{glibc 2.17}, lo que impide instalar Node.js 18, 20 o superiores desde NodeSource.
+
+\subsection{Solución: Node.js 16}
+
+Node.js 16 es la última versión compatible con \texttt{glibc 2.17}.
+
+\begin{lstlisting}[style=bash, caption={Instalación de Node.js 16}]
+cd /opt
+sudo curl -O https://nodejs.org/dist/latest-v16.x/node-v16.20.2-linux-x64.tar.xz
+sudo tar -xf node-v16.20.2-linux-x64.tar.xz
+sudo mv node-v16.20.2-linux-x64 node16
+
+echo 'export PATH=/opt/node16/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+
+node -v    # v16.20.2
+npm -v     # 8.19.4
+\end{lstlisting}
+
+\subsection{Instalación de Node-RED}
+
+\begin{lstlisting}[style=bash, caption={Instalación de Node-RED 3.1.3}]
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=$HOME/.npm-global/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+
+npm install -g --unsafe-perm node-red@3.1.3
+
+# Verificación
+which node-red
+\end{lstlisting}
+
+% ============================================================
+% PARTE II - APACHE KAFKA Y PRODUCTOR NFC
+% ============================================================
+\part{Apache Kafka y Sistema de Producción de Eventos}
+\label{part:kafka}
+
+\section{Configuración de Apache Kafka}
+\label{sec:kafka-config}
+
+\subsection{Arquitectura del Sistema}
+
+El sistema de control de accesos NFC utiliza Apache Kafka como plataforma central de streaming de eventos. El broker Kafka en \texttt{nodo1} procesa eventos generados por el productor \texttt{nfc\_producer.py} y los distribuye a múltiples consumidores.
+
+\subsection{Configuración del Broker (nodo1)}
+
+Archivo: \texttt{/opt/kafka-2.8.1/config/server.properties}
+
+\begin{lstlisting}[style=bash, caption={Configuración del broker Kafka}]
+# ID único del broker
+broker.id=10
+
+# Listeners - Escucha en todas las interfaces
+listeners=PLAINTEXT://0.0.0.0:9092
+
+# Advertised listeners - IP anunciada a clientes
+advertised.listeners=PLAINTEXT://172.16.200.28:9092
+
+# Conexión a Zookeeper del cluster
+zookeeper.connect=172.16.200.10:2181
+
+# Directorio de almacenamiento de logs
+log.dirs=/opt/kafka-2.8.1/kafka-logs
+
+# Retención de logs (7 días)
+log.retention.hours=168
+\end{lstlisting}
+
+\subsection{Creación del Topic}
+
+\begin{lstlisting}[style=bash, caption={Creación del topic acceso-centros-nfc}]
+cd /opt/kafka-2.8.1
+
+bin/kafka-topics.sh --create \
+  --topic acceso-centros-nfc \
+  --bootstrap-server 172.16.200.28:9092 \
+  --partitions 3 \
+  --replication-factor 1
+\end{lstlisting}
+
+\section{Productor NFC - Control de Accesos}
+\label{sec:productor-nfc}
+
+\subsection{Características Técnicas}
+
+\begin{table}[h!]
+\centering
+\caption{Especificaciones del productor NFC}
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Característica} & \textbf{Valor} \\ \midrule
+Lenguaje & Python 3.x \\
+Broker Kafka & 172.16.200.28:9092, 172.16.200.10:9092 \\
+Topic & acceso-centros-nfc \\
+Particiones & 3 \\
+Frecuencia & 5 eventos/segundo \\
+Formato & JSON UTF-8 \\
+Garantías & acks='all' \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Estructura del Evento NFC}
+
+\begin{lstlisting}[style=json, caption={Ejemplo de evento NFC}]
+{
+  "nfc_id": "NFC-A3F7D9E2C4B1",
+  "timestamp": "2026-02-02T08:34:12.456789",
+  "estudiante": {
+    "nombre": "María García López",
+    "curso": "2º ESO"
+  },
+  "centro": {
+    "nombre": "IES Miguel Servet",
+    "codigo": "50008174",
+    "maintag": "SEC-MIGUELSERVET",
+    "provincia": "Zaragoza"
+  },
+  "tipo_evento": "ENTRADA",
+  "franja_horaria": "ENTRADA_MANANA",
+  "punto_acceso": "Entrada Principal",
+  "estado": "VALIDADO",
+  "temperatura_corporal": 36.5
+}
+\end{lstlisting}
+
+\subsection{Implementación del Productor}
+
+\begin{lstlisting}[style=python, caption={Fragmento del productor NFC}]
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import json
+import time
+import random
+from datetime import datetime
+from kafka import KafkaProducer
+from faker import Faker
+
+# Configuración
+KAFKA_BROKER = '172.16.200.28:9092'
+TOPIC_NAME = 'acceso-centros-nfc'
+EVENTS_PER_SECOND = 5
+
+fake = Faker('es_ES')
+
+producer = KafkaProducer(
+    bootstrap_servers=[KAFKA_BROKER],
+    value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode('utf-8'),
+    acks='all'
+)
+
+def generar_evento():
+    """Genera un evento de acceso NFC completo"""
+    evento = {
+        'nfc_id': generar_nfc_id(),
+        'timestamp': datetime.now().isoformat(),
+        'estudiante': {
+            'nombre': fake.name(),
+            'curso': random.choice(CURSOS)
+        },
+        'tipo_evento': random.choice(['ENTRADA', 'SALIDA']),
+        'estado': 'VALIDADO' if random.random() > 0.02 else 'RECHAZADO',
+        'temperatura_corporal': round(random.uniform(35.8, 37.2), 1)
+    }
+    return evento
+
+# Bucle principal
+while True:
+    evento = generar_evento()
+    producer.send(TOPIC_NAME, value=evento)
+    time.sleep(1 / EVENTS_PER_SECOND)
+\end{lstlisting}
+
+\section{Configuración de JMX Prometheus Exporter}
+\label{sec:jmx-exporter}
+
+\subsection{Objetivo}
+
+Configurar el servidor Kafka en \texttt{nodo1} para exponer métricas operativas mediante JMX Prometheus Exporter, permitiendo que sistemas externos de monitorización puedan consumir información sobre el estado y rendimiento del broker.
+
+\subsection{Especificaciones Técnicas}
+
+\begin{table}[h!]
+\centering
+\caption{Especificaciones del JMX Exporter}
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\ \midrule
+Servidor & nodo1 (172.16.200.28) \\
+Puerto Métricas & 7071 \\
+JMX Exporter & 0.20.0 \\
+Kafka Version & 2.8.1 \\
+Topic Principal & acceso-centros-nfc \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Configuración del Exporter}
+
+\begin{lstlisting}[style=yaml, caption={kafka-jmx-config.yml}]
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+rules:
+  - pattern: kafka.server<type=(.+), name=(.+)><>Value
+    name: kafka_server_$1_$2
+    type: GAUGE
+  
+  - pattern: kafka.network<type=(.+), name=(.+), request=(.+)><>Value
+    name: kafka_network_$1_$2
+    type: GAUGE
+    labels:
+      request: "$3"
+\end{lstlisting}
+
+\subsection{Modificación del Script de Kafka}
+
+\begin{lstlisting}[style=bash, caption={Configuración JMX en kafka-server-start.sh}]
+# JMX settings
+if [ -z "$KAFKA_JMX_OPTS" ]; then
+  KAFKA_JMX_OPTS="-javaagent:/opt/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka-jmx-config.yml \
+                  -Dcom.sun.management.jmxremote \
+                  -Dcom.sun.management.jmxremote.authenticate=false \
+                  -Dcom.sun.management.jmxremote.ssl=false \
+                  -Dcom.sun.management.jmxremote.port=9999 \
+                  -Djava.rmi.server.hostname=172.16.200.28"
+fi
+export KAFKA_JMX_OPTS
+\end{lstlisting}
+
+% ============================================================
+% PARTE III - BASES DE DATOS Y ALMACENAMIENTO
+% ============================================================
+\part{Bases de Datos y Sistemas de Almacenamiento}
+\label{part:databases}
+
+\section{Configuración de Redis}
+\label{sec:redis}
+
+\subsection{Conexión y Autenticación}
+
+Redis está configurado con una contraseña. Para interactuar con él, debes autenticarte.
+
+\begin{lstlisting}[style=bash, caption={Conexión a Redis}]
+redis-cli
+127.0.0.1:6379> AUTH tu_contraseña
+OK
+\end{lstlisting}
+
+\subsection{Verificar Contenido}
+
+\begin{lstlisting}[style=bash, caption={Listar todas las claves}]
+redis-cli -a "tu_contraseña" KEYS "*"
+\end{lstlisting}
+
+\subsection{Gestión de Memoria}
+
+\begin{lstlisting}[style=bash, caption={Configurar política de evicción}]
+redis-cli -a "tu_contraseña" CONFIG GET maxmemory-policy
+redis-cli -a "tu_contraseña" CONFIG SET maxmemory-policy noeviction
+\end{lstlisting}
+
+\section{Configuración de PostgreSQL}
+\label{sec:postgresql}
+
+\subsection{Editar pg\_hba.conf}
+
+\begin{lstlisting}[style=bash, caption={Configuración de acceso}]
+sudo vi /var/lib/pgsql/data/pg_hba.conf
+\end{lstlisting}
+
+Añadir las siguientes líneas:
+
+\begin{lstlisting}[caption={Reglas de acceso en pg\_hba.conf}]
+# Conexión desde la IP de la VM
+host    migasfree       ambari_user     192.168.1.103/32        md5
+
+# Conexión desde localhost
+host    migasfree       ambari_user     127.0.0.1/32            md5
+\end{lstlisting}
+
+\subsection{Creación de Usuario y Base de Datos}
+
+\begin{lstlisting}[style=sql, caption={Crear usuario y base de datos}]
+-- Crear usuario
+CREATE USER ambari_user WITH PASSWORD 'password';
+
+-- Crear base de datos
+CREATE DATABASE migasfree;
+
+-- Asignar propietario
+ALTER DATABASE migasfree OWNER TO ambari_user;
+
+-- Otorgar permisos
+GRANT ALL PRIVILEGES ON DATABASE migasfree TO ambari_user;
+\end{lstlisting}
+
+\section{Monitoreo de Redis con Prometheus y Grafana}
+\label{sec:redis-monitoring}
+
+\subsection{Arquitectura del Entorno}
+
+\begin{itemize}
+    \item Máquina 1 (\texttt{nodo1}) — IP: \texttt{172.16.200.63} → Servicios: Prometheus, Grafana
+    \item Máquina 2 — IP: \texttt{172.16.200.23} → Servicio: Redis
+\end{itemize}
+
+\subsection{Instalación de Prometheus}
+
+\begin{lstlisting}[style=bash, caption={Instalación de Prometheus}]
+sudo useradd --no-create-home --shell /bin/false prometheus
+sudo mkdir /etc/prometheus
+sudo mkdir /var/lib/prometheus
+
+cd /tmp
+LATEST_VERSION=$(curl -s https://api.github.com/repos/prometheus/prometheus/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
+wget https://github.com/prometheus/prometheus/releases/download/$LATEST_VERSION/prometheus-$LATEST_VERSION.linux-amd64.tar.gz
+tar xvf prometheus-$LATEST_VERSION.linux-amd64.tar.gz
+
+cd prometheus-$LATEST_VERSION.linux-amd64
+sudo cp prometheus /usr/local/bin/
+sudo cp promtool /usr/local/bin/
+\end{lstlisting}
+
+\subsection{Configuración de Prometheus}
+
+\begin{lstlisting}[style=yaml, caption={prometheus.yml}]
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['172.16.200.23:9121']
+\end{lstlisting}
+
+\subsection{Instalación de Grafana}
+
+\begin{lstlisting}[style=bash, caption={Instalación de Grafana}]
+sudo tee /etc/yum.repos.d/grafana.repo <<EOF
+[grafana]
+name=grafana
+baseurl=https://packages.grafana.com/oss/rpm
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.grafana.com/gpg.key
+EOF
+
+sudo yum install -y grafana
+sudo systemctl enable grafana-server
+sudo systemctl start grafana-server
+\end{lstlisting}
+
+Acceso: \texttt{http://172.16.200.63:3000} (admin/admin)
+
+% ============================================================
+% PARTE IV - PROCESAMIENTO DISTRIBUIDO
+% ============================================================
+\part{Procesamiento Distribuido y Análisis}
+\label{part:processing}
+
+\section{Apache Flink}
+\label{sec:flink}
+
+\subsection{Arquitectura del Sistema}
+
+\begin{itemize}
+    \item \textbf{Motor de Procesamiento:} Apache Flink 1.15.4 (Scala 2.12)
+    \item \textbf{Entorno de Scripting:} Python 3.6
+    \item \textbf{Nodo Maestro:} \texttt{ambari13} (172.16.200.13)
+    \item \textbf{Base de Datos:} Redis (172.16.200.23)
+    \item \textbf{Interfaz de Gestión:} Flink Web UI en puerto 8081
+\end{itemize}
+
+\subsection{Instalación de PyFlink}
+
+\begin{lstlisting}[style=bash, caption={Instalación de PyFlink}]
+pip3 install --user --upgrade pip setuptools wheel
+pip3 install --user apache-flink==1.15.4
+pip3 install --user redis
+\end{lstlisting}
+
+\subsection{Configuración de Flink}
+
+Archivo: \texttt{flink-conf.yaml}
+
+\begin{lstlisting}[style=yaml, caption={Configuración crítica de Flink}]
+rest.address: 0.0.0.0
+python.executable: /usr/bin/python3
+\end{lstlisting}
+
+\subsection{Implementación del Pipeline}
+
+\begin{lstlisting}[style=python, caption={Pipeline de persistencia en Flink}]
+from pyflink.table import EnvironmentSettings, TableEnvironment
+from pyflink.table.udf import udf
+from pyflink.table import DataTypes
+
+@udf(result_type=DataTypes.STRING())
+def send_to_redis(id_val):
+    import redis
+    try:
+        r = redis.StrictRedis(
+            host='172.16.200.23', 
+            port=6379, 
+            db=0, 
+            password='password'
+        )
+        r.set(f"sensor_id_{id_val}", "CLUSTER_ACTIVE")
+        return f"ID {id_val}: OK"
+    except Exception as e:
+        return str(e)
+
+# Crear entorno
+env_settings = EnvironmentSettings.new_instance() \
+    .in_streaming_mode() \
+    .build()
+t_env = TableEnvironment.create(env_settings)
+
+# Registrar UDF
+t_env.create_temporary_function("send_to_redis", send_to_redis)
+\end{lstlisting}
+
+\section{Configuración de Zeppelin}
+\label{sec:zeppelin}
+
+\subsection{Conectividad JDBC con PostgreSQL}
+
+\textbf{Problema:} \texttt{ClassNotFoundException} al intentar conectar con PostgreSQL.
+
+\textbf{Solución:}
+
+\begin{itemize}
+    \item Despliegue del conector \texttt{postgresql-42.5.0.jar} en \texttt{/usr/lib/zeppelin/lib/}
+    \item Modificación del template \texttt{spark2-env} en Ambari
+\end{itemize}
+
+\begin{lstlisting}[style=bash, caption={Configuración del classpath}]
+export SPARK_DIST_CLASSPATH=$(hadoop classpath):/usr/lib/zeppelin/lib/postgresql-jdbc.jar
+\end{lstlisting}
+
+\subsection{Migración a Python 3}
+
+\begin{lstlisting}[style=bash, caption={Configuración de Python 3 en Zeppelin}]
+# En Zeppelin interpreter settings
+zeppelin.pyspark.python=/usr/bin/python3
+spark.pyspark.python=/usr/bin/python3
+\end{lstlisting}
+
+\subsection{Sincronización de Dependencias}
+
+\begin{lstlisting}[style=bash, caption={Instalación de librerías en todos los nodos}]
+sudo pip3 install --only-binary=:all: pandas matplotlib seaborn Pillow
+
+# Ajustar permisos
+sudo chmod -R 755 /usr/lib64/python3.6/site-packages
+\end{lstlisting}
+
+% ============================================================
+% PARTE V - VISUALIZACIÓN Y DASHBOARDS
+% ============================================================
+\part{Visualización y Dashboards}
+\label{part:visualization}
+
+\section{Apache Superset}
+\label{sec:superset}
+
+\subsection{Instalación}
+
+\begin{lstlisting}[style=bash, caption={Instalación de Apache Superset}]
+su -
+yum install -y gcc gcc-c++ libffi-devel python-devel python-pip \
+python-wheel openssl-devel cyrus-sasl-devel openldap-devel
+
+pip install --upgrade pip setuptools
+pip install apache-superset
+\end{lstlisting}
+
+\subsection{Configuración Inicial}
+
+\begin{lstlisting}[style=bash, caption={Inicialización de Superset}]
+export FLASK_APP=superset
+superset db upgrade
+superset fab create-admin
+superset init
+\end{lstlisting}
+
+\subsection{Instalación del Driver PostgreSQL}
+
+\begin{lstlisting}[style=bash, caption={Instalación de psycopg2-binary}]
+pip3 install psycopg2-binary
+\end{lstlisting}
+
+\subsection{Iniciar Superset}
+
+\begin{lstlisting}[style=bash, caption={Ejecutar Superset}]
+export FLASK_APP=superset
+superset run -h 0.0.0.0 -p 9089 --with-threads
+\end{lstlisting}
+
+Acceso: \texttt{http://172.16.200.30:9089}
+
+\subsection{Conexión a PostgreSQL}
+
+\textbf{SQLAlchemy URI:}
+
+\begin{lstlisting}
+postgresql://ambari:password@172.16.200.43:5432/migasfree
+\end{lstlisting}
+
+\subsection{Dashboard Panel Migasfree}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image1.png}
+    \caption{Dashboard Panel Migasfree - Vista completa del sistema de gestión}
+    \label{fig:dashboard-superset}
+\end{figure}
+
+\subsubsection{Componentes del Dashboard}
+
+\begin{enumerate}
+    \item \textbf{Aplicaciones por categoría} (Pie Chart)
+    \begin{itemize}
+        \item Distribución de 414 aplicaciones en 14 categorías
+        \item Identifica predominancia de software
+    \end{itemize}
+    
+    \item \textbf{Centros por provincia} (Gráfico de barras)
+    \begin{itemize}
+        \item Visualización de concentración geográfica
+        \item Provincia líder: $\sim$100 centros
+    \end{itemize}
+    
+    \item \textbf{Distribución de Centros} (TreeMap)
+    \begin{itemize}
+        \item 30 centros distribuidos por zonas
+        \item Provincias: Huesca (27), Teruel, Zaragoza
+    \end{itemize}
+    
+    \item \textbf{Listado de centros} (Tabla)
+    \begin{itemize}
+        \item Información detallada: nombre, código, maintag, provincia
+        \item Consulta rápida de datos específicos
+    \end{itemize}
+    
+    \item \textbf{Entradas y salida ordenadores} (Comparativo)
+    \begin{itemize}
+        \item Volumen: $\sim$1.5k entradas y salidas
+        \item Monitoreo de flujo de equipamiento
+    \end{itemize}
+    
+    \item \textbf{10 centros más activos} (Ranking)
+    \begin{itemize}
+        \item Rango: 80-120 accesos por centro
+        \item Identificación de centros con mayor uso
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Métricas Clave}
+
+\begin{table}[h!]
+\centering
+\caption{Métricas principales del dashboard}
+\begin{tabular}{@{} l r l @{}}
+\toprule
+\textbf{Métrica} & \textbf{Valor} & \textbf{Descripción} \\ \midrule
+Total Aplicaciones & 414 & Software en inventario \\
+Total Centros & 30 & Centros registrados \\
+Provincias & 4 & Cobertura geográfica \\
+Flujo Equipos & $\sim$1.5k & Movimiento entrada/salida \\
+Categorías Software & 14 & Clasificaciones disponibles \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Casos de Uso}
+
+\begin{itemize}
+    \item \textbf{Gestión de Inventario:} Supervisar distribución de software y hardware
+    \item \textbf{Planificación Geográfica:} Identificar zonas con mayor/menor densidad
+    \item \textbf{Monitoreo de Actividad:} Detectar centros con alto uso del sistema
+    \item \textbf{Auditoría de Equipos:} Rastrear entradas y salidas
+    \item \textbf{Análisis de Software:} Evaluar categorías más utilizadas
+\end{itemize}
+
+% ============================================================
+% CONCLUSIONES GENERALES
+% ============================================================
+\part{Conclusiones y Próximos Pasos}
+\label{part:conclusiones}
+
+\section{Logros Alcanzados}
+
+\begin{itemize}
+    \item[$\checkmark$] Pipeline de datos en tiempo real completamente operativo
+    \item[$\checkmark$] Cluster Kafka distribuido con alta disponibilidad
+    \item[$\checkmark$] Productor NFC robusto generando eventos realistas
+    \item[$\checkmark$] Integración con múltiples sistemas de procesamiento (Flink, Spark)
+    \item[$\checkmark$] Monitorización completa con Prometheus y Grafana
+    \item[$\checkmark$] Visualización avanzada con Apache Superset
+    \item[$\checkmark$] Almacenamiento distribuido en Redis y PostgreSQL
+    \item[$\checkmark$] Dashboard interactivo con Node-RED
+    \item[$\checkmark$] Arquitectura escalable y mantenible
+\end{itemize}
+
+\section{Arquitectura Final del Sistema}
+
+El sistema integra los siguientes componentes en un flujo completo de datos:
+
+\begin{enumerate}
+    \item \textbf{Generación:} Productor NFC simula eventos de acceso en centros educativos
+    \item \textbf{Ingesta:} Apache Kafka gestiona el streaming con 3 particiones
+    \item \textbf{Procesamiento:} Apache Flink y Spark procesan datos en tiempo real
+    \item \textbf{Almacenamiento:} Redis (caché) y PostgreSQL (persistencia)
+    \item \textbf{Monitorización:} Prometheus + Grafana + JMX Exporter
+    \item \textbf{Visualización:} Apache Superset + Node-RED dashboards
+    \item \textbf{Análisis:} Apache Zeppelin con Python 3 y librerías ML
+\end{enumerate}
+
+\section{Lecciones Aprendidas}
+
+\subsection{Técnicas}
+
+\begin{itemize}
+    \item Importancia de la configuración de red en sistemas distribuidos
+    \item Gestión de offsets en Kafka para garantizar no perder mensajes
+    \item Sincronización de dependencias en entornos multi-nodo
+    \item Compatibilidad de versiones en ecosistemas legacy (CentOS 7)
+\end{itemize}
+
+\subsection{Operacionales}
+
+\begin{itemize}
+    \item Uso de Docker para simplificar despliegues
+    \item Debugging de conectividad entre componentes distribuidos
+    \item Generación de datos sintéticos realistas para pruebas
+    \item Configuración de firewalls en arquitecturas distribuidas
+\end{itemize}
+
+\section{Próximos Pasos}
+
+\subsection{Mejoras Técnicas}
+
+\begin{enumerate}
+    \item Implementar modelos de Machine Learning para análisis predictivo
+    \item Escalar a múltiples centros educativos simultáneamente
+    \item Optimizar el rendimiento del cluster para mayor throughput
+    \item Implementar alertas automatizadas basadas en métricas
+    \item Añadir autenticación y seguridad en todos los servicios
+\end{enumerate}
+
+\subsection{Expansión Funcional}
+
+\begin{enumerate}
+    \item Desarrollar API REST para consultas en tiempo real
+    \item Integrar con sistemas de control de acceso físico reales
+    \item Implementar análisis de patrones de comportamiento
+    \item Crear reportes automáticos personalizados
+    \item Añadir soporte para múltiples tipos de sensores
+\end{enumerate}
+
+\section{Resumen de Tecnologías Implementadas}
+
+\begin{table}[h!]
+\centering
+\caption{Stack tecnológico completo del proyecto}
+\begin{tabular}{@{} l l l @{}}
+\toprule
+\textbf{Categoría} & \textbf{Tecnología} & \textbf{Versión} \\ \midrule
+Messaging & Apache Kafka & 2.8.1 \\
+Coordinación & Apache Zookeeper & 3.4.6 \\
+Stream Processing & Apache Flink & 1.15.4 \\
+Batch Processing & Apache Spark & 3.1.2 \\
+Caché & Redis & Latest \\
+Base de Datos & PostgreSQL & 13.x \\
+Monitorización & Prometheus + Grafana & Latest \\
+Visualización & Apache Superset & Latest \\
+Notebooks & Apache Zeppelin & Latest \\
+Automatización & Node-RED & 3.1.3 \\
+Lenguajes & Python 3, Scala 2.12 & 3.6+ \\
+SO & CentOS & 7 \\
+Gestión Cluster & Apache Ambari & Latest \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+% APÉNDICES
+% ============================================================
+\appendix
+
+\section{Comandos de Referencia Rápida}
+
+\subsection{Kafka}
+
+\begin{lstlisting}[style=bash, caption={Comandos útiles de Kafka}]
+# Listar topics
+bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+
+# Describir topic
+bin/kafka-topics.sh --describe --topic acceso-centros-nfc \
+  --bootstrap-server localhost:9092
+
+# Consumer de consola
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+  --topic acceso-centros-nfc --from-beginning
+
+# Producer de consola
+bin/kafka-console-producer.sh --broker-list localhost:9092 \
+  --topic acceso-centros-nfc
+\end{lstlisting}
+
+\subsection{Redis}
+
+\begin{lstlisting}[style=bash, caption={Comandos útiles de Redis}]
+# Conectar con autenticación
+redis-cli -a "password"
+
+# Listar todas las claves
+KEYS "*"
+
+# Ver valor de una clave
+GET sensor_id_1
+
+# Configurar política de evicción
+CONFIG SET maxmemory-policy noeviction
+\end{lstlisting}
+
+\subsection{PostgreSQL}
+
+\begin{lstlisting}[style=bash, caption={Comandos útiles de PostgreSQL}]
+# Conectar a base de datos
+psql -U ambari_user -d migasfree
+
+# Listar tablas
+\dt
+
+# Verificar contenido
+SELECT COUNT(*) FROM server_computer;
+
+# Salir de psql
+\q
+\end{lstlisting}
+
+\section{Resolución de Problemas Comunes}
+
+\begin{table}[h!]
+\centering
+\caption{Troubleshooting guide}
+\small
+\begin{tabular}{@{} p{4cm} p{4cm} p{5cm} @{}}
+\toprule
+\textbf{Problema} & \textbf{Causa} & \textbf{Solución} \\ \midrule
+Kafka no conecta & Firewall bloqueando puerto 9092 & \texttt{firewall-cmd --add-port=9092/tcp} \\
+\midrule
+JMX métricas no disponibles & Puerto 7071 no abierto & \texttt{firewall-cmd --add-port=7071/tcp} \\
+\midrule
+Flink slots no disponibles & Procesos zombie Python & Reiniciar cluster Flink \\
+\midrule
+Zeppelin Python 2.7 & Configuración incorrecta & Actualizar \texttt{PYSPARK\_PYTHON} \\
+\midrule
+PostgreSQL conexión rechazada & \texttt{pg\_hba.conf} mal configurado & Añadir regla de acceso y reiniciar \\
+\midrule
+Redis sin autenticar & Falta contraseña & \texttt{AUTH password} \\
+\midrule
+Superset puerto en uso & Proceso previo activo & \texttt{lsof -i :9089} y kill \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Referencias y Documentación}
+
+\subsection{Documentación Oficial}
+
+\begin{itemize}
+    \item Apache Kafka: \url{https://kafka.apache.org/documentation/}
+    \item Apache Flink: \url{https://flink.apache.org/}
+    \item Apache Spark: \url{https://spark.apache.org/docs/latest/}
+    \item Node-RED: \url{https://nodered.org/docs/}
+    \item Prometheus: \url{https://prometheus.io/docs/}
+    \item Grafana: \url{https://grafana.com/docs/}
+    \item Apache Superset: \url{https://superset.apache.org/docs/}
+    \item Redis: \url{https://redis.io/documentation}
+    \item PostgreSQL: \url{https://www.postgresql.org/docs/}
+\end{itemize}
+
+\subsection{Repositorios GitHub}
+
+\begin{itemize}
+    \item JMX Exporter: \url{https://github.com/prometheus/jmx_exporter}
+    \item Redis Exporter: \url{https://github.com/oliver006/redis_exporter}
+    \item PyFlink: \url{https://github.com/apache/flink}
+\end{itemize}
+
+\end{document}
